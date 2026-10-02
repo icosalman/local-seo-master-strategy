@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local SEO audit: {{ site_host }}</title>
+<style>
+:root{
+  --ink:#1d2a36; --muted:#5b6876; --line:#d9dee3; --panel:#f2f4f6; --paper:#ffffff;
+  --accent:#1f5c7a;
+  --pass:#2e7d4f; --fail:#b3261e; --warn:#94630a; --info:#5b6876; --nc:#62549a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+a{color:var(--accent)}
+h1{font-size:30px;line-height:1.2;margin:0 0 4px;font-weight:700;letter-spacing:-.01em;word-break:break-all}
+h2{font-size:21px;margin:48px 0 6px;padding-top:14px;border-top:3px solid var(--ink)}
+h3{font-size:16px;margin:26px 0 8px}
+.sub{color:var(--muted);margin:0 0 6px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 22px;color:var(--muted);font-size:14px;margin:12px 0 22px}
+.facts b{color:var(--ink);font-weight:600}
+.strip{display:flex;height:14px;border-radius:3px;overflow:hidden;margin:6px 0 10px;background:var(--panel)}
+.strip span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:24px 0 0;padding:0;list-style:none}
+.toc a{display:inline-block;padding:5px 10px;border:1px solid var(--line);border-radius:4px;text-decoration:none;color:var(--ink);font-size:14px}
+.toc a:hover,.toc a:focus{border-color:var(--accent);outline:none}
+.note{background:var(--panel);border-left:4px solid var(--accent);padding:10px 14px;margin:12px 0;font-size:14px}
+details.f{border:1px solid var(--line);border-left:5px solid var(--info);border-radius:4px;margin:8px 0;background:#fff}
+details.f[open]{background:#fbfcfd}
+details.f.fail{border-left-color:var(--fail)} details.f.warn{border-left-color:var(--warn)}
+details.f.pass{border-left-color:var(--pass)} details.f.not_checked{border-left-color:var(--nc)}
+details.f summary{cursor:pointer;padding:10px 14px;display:flex;gap:10px;align-items:baseline;list-style:none}
+details.f summary::-webkit-details-marker{display:none}
+details.f summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tag{flex:none;font-size:12px;font-weight:700;padding:1px 7px;border-radius:3px;color:#fff;background:var(--info)}
+.tag.fail{background:var(--fail)} .tag.warn{background:var(--warn)} .tag.pass{background:var(--pass)} .tag.not_checked{background:var(--nc)}
+.prio{flex:none;font-size:12px;font-weight:700;color:var(--ink);border:1px solid var(--ink);padding:0 6px;border-radius:3px}
+.area{margin-left:auto;flex:none;color:var(--muted);font-size:13px}
+.body{padding:0 14px 12px 14px;font-size:14px}
+.body dl{display:grid;grid-template-columns:110px 1fr;gap:4px 12px;margin:0}
+.body dt{color:var(--muted)} .body dd{margin:0}
+.ev{margin:6px 0 0;padding-left:18px;word-break:break-word}
+.ev li{margin:2px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:4px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--panel);font-weight:600;white-space:nowrap}
+td.url{word-break:break-all;max-width:420px}
+tr.me td{background:#e8f0f5;font-weight:600}
+.ok{color:var(--pass);font-weight:600} .no{color:var(--fail);font-weight:600} .opt{color:var(--muted)}
+.month{margin:14px 0 6px;font-weight:700}
+ul.plan{margin:0;padding-left:0;list-style:none}
+ul.plan li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.kind{flex:none;width:86px;font-size:12px;font-weight:700;color:var(--muted)}
+.kind.FINDING{color:var(--fail)}
+.why{color:var(--muted);font-size:13px}
+footer{margin-top:60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:12px}
+@media print{details.f{break-inside:avoid} .toc{display:none} details.f .body{display:block}}
+@media (max-width:640px){.area{display:none}.body dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="sub">Local SEO audit against the Roofing Master Strategy</p>
+<h1>{{ site_host }}</h1>
+<div class="facts">
+  <span>Audited <b>{{ generated_at }}</b></span>
+  <span>Start URL <b>{{ start_url }}</b></span>
+  <span>Pages fetched <b>{{ pages|length }}</b> ({{ indexable_count }} indexable)</span>
+  <span>Sitemap URLs <b>{{ sitemap_count }}</b></span>
+  {% if business_name %}<span>Business <b>{{ business_name }}</b></span>{% endif %}
+  {% if cities %}<span>Cities <b>{{ cities|join(", ") }}</b></span>{% endif %}
+  {% if cms %}<span>Platform <b>{{ cms|join(", ") }}</b></span>{% endif %}
+</div>
+
+<div class="strip" role="img" aria-label="{{ counts.fail }} fail, {{ counts.warn }} warn, {{ counts.pass }} pass, {{ counts.info }} info, {{ counts.not_checked }} not checked">
+  {% for s, col in [("fail","var(--fail)"),("warn","var(--warn)"),("pass","var(--pass)"),("info","var(--info)"),("not_checked","var(--nc)")] %}
+  {% if counts[s] %}<span style="width:{{ (counts[s] / total * 100)|round(2) }}%;background:{{ col }}"></span>{% endif %}
+  {% endfor %}
+</div>
+<div class="legend">
+  <span><i style="background:var(--fail)"></i>{{ counts.fail }} fail</span>
+  <span><i style="background:var(--warn)"></i>{{ counts.warn }} warning</span>
+  <span><i style="background:var(--pass)"></i>{{ counts.pass }} pass</span>
+  <span><i style="background:var(--info)"></i>{{ counts.info }} info</span>
+  <span><i style="background:var(--nc)"></i>{{ counts.not_checked }} not checked</span>
+</div>
+<div class="note">Every result comes from a fixed rule applied to data fetched during this run. Each one shows its rule and evidence. "Not checked" means the tool had no access to that data, so it reports nothing instead of guessing. Pattern matches (pages, claims) show the matched URL or quote so you can confirm them.</div>
+
+<ul class="toc">
+  <li><a href="#weak">Weak points ({{ weak|length }})</a></li>
+  <li><a href="#strong">Strong points ({{ strong|length }})</a></li>
+  <li><a href="#plan">Action plan</a></li>
+  <li><a href="#pages-plan">Pages to build</a></li>
+  <li><a href="#silos">Silo coverage</a></li>
+  {% if city_coverage %}<li><a href="#cities">Cities</a></li>{% endif %}
+  {% if competitors %}<li><a href="#comp">Competitors</a></li>{% endif %}
+  <li><a href="#manual">Needs manual check ({{ manual|length }})</a></li>
+  <li><a href="#facts">Site facts</a></li>
+  <li><a href="#inventory">Page inventory</a></li>
+</ul>
+
+{% macro finding(f) %}
+<details class="f {{ f.status }}">
+  <summary><span class="tag {{ f.status }}">{{ {"fail":"FAIL","warn":"WARN","pass":"PASS","info":"INFO","not_checked":"NOT CHECKED"}[f.status] }}</span>
+    {% if f.priority %}<span class="prio">{{ f.priority }}</span>{% endif %}
+    <span>{{ f.title }}</span><span class="area">{{ f.area }}</span></summary>
+  <div class="body"><dl>
+    {% if f.detail %}<dt>Note</dt><dd>{{ f.detail }}</dd>{% endif %}
+    {% if f.action %}<dt>Action</dt><dd><b>{{ f.action }}</b>{% if f.status in ("fail","warn") %} (Month {{ f.month }}){% endif %}</dd>{% endif %}
+    {% if f.rule %}<dt>Rule</dt><dd>{{ f.rule }}</dd>{% endif %}
+    {% if f.ref %}<dt>Strategy</dt><dd>{{ f.ref }}</dd>{% endif %}
+    {% if f.evidence %}<dt>Evidence</dt><dd><ul class="ev">{% for e in f.evidence %}<li>{{ e }}</li>{% endfor %}</ul></dd>{% endif %}
+  </dl></div>
+</details>
+{% endmacro %}
+
+<h2 id="weak">Weak points</h2>
+<p class="sub">Failures and warnings, highest priority first. P1 = do first.</p>
+{% for f in weak %}{{ finding(f) }}{% else %}<p>No failures or warnings.</p>{% endfor %}
+
+<h2 id="strong">Strong points</h2>
+{% for f in strong %}{{ finding(f) }}{% else %}<p>No passing checks.</p>{% endfor %}
+{% if info %}<h3>For information</h3>{% for f in info %}{{ finding(f) }}{% endfor %}{% endif %}
+
+<h2 id="plan">Action plan (Master Strategy roadmap)</h2>
+<p class="sub">FINDING = from a failed check on this site. PLAYBOOK = standard work for every roofing client, not a claim about this site.</p>
+{% for m, label in plan.months.items() %}
+  {% if plan.roadmap[m] %}
+  <div class="month">{{ label }}</div>
+  <ul class="plan">
+  {% for it in plan.roadmap[m] %}
+    <li><span class="kind {{ it.kind }}">{{ it.kind }}{% if it.priority %} {{ it.priority }}{% endif %}</span>
+      <span>{{ it.text }}{% if it.why %}<br><span class="why">Because: {{ it.why }}{% if it.ref %} ({{ it.ref }}){% endif %}</span>{% endif %}</span></li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+{% endfor %}
+<div class="month">Every week</div>
+<ul class="plan">{% for w in plan.weekly %}<li><span class="kind">PLAYBOOK</span><span>{{ w }}</span></li>{% endfor %}</ul>
+
+<h2 id="pages-plan">Pages to build</h2>
+<p class="sub">Suggested URLs follow the URL rules (lowercase, hyphens, under 75 characters). Confirm services with the client first.</p>
+{% if plan.page_plan %}
+<div class="tw"><table><thead><tr><th>Month</th><th>Page</th><th>Silo</th><th>Suggested URL</th><th>Type</th></tr></thead><tbody>
+{% for p in plan.page_plan %}<tr><td>{{ p.month }}</td><td>{{ p.page }}</td><td>{{ p.silo }}</td><td class="url">{{ p.url }}</td><td>{{ p.type }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<p>No missing pages found against the plan.</p>{% endif %}
+
+<h2 id="silos">Silo coverage</h2>
+<div class="tw"><table><thead><tr><th>Page</th><th>Silo</th><th>Plan</th><th>Status</th><th>Found at</th></tr></thead><tbody>
+{% for r in silo_coverage %}<tr>
+<td>{{ r.label }}</td><td>{{ r.silo }}</td><td>{{ "Core" if r.core else "Optional" }}</td>
+<td>{% if r.status == "found" %}<span class="ok">Found</span>{% elif r.status == "missing_core" %}<span class="no">Not found</span>{% else %}<span class="opt">Not found</span>{% endif %}</td>
+<td class="url">{% for u in r.found %}<a href="{{ u }}">{{ u }}</a><br>{% endfor %}{% if r.matched_by %}<span class="why">{{ r.matched_by }}</span>{% endif %}</td>
+</tr>{% endfor %}
+</tbody></table></div>
+
+{% if city_coverage %}
+<h2 id="cities">City coverage</h2>
+<div class="tw"><table><thead><tr><th>City</th><th>Dedicated page</th><th>Pages mentioning city</th>{% for s in combo_labels %}<th>{{ s }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in city_coverage %}<tr><td>{{ r.city }}</td>
+<td class="url">{% for u in r.pages %}<a href="{{ u }}">{{ u }}</a><br>{% else %}<span class="no">None</span>{% endfor %}</td>
+<td>{{ r.mention_pages }}</td>
+{% for s in combo_labels %}<td class="url">{% if r.combos[s] %}<a href="{{ r.combos[s] }}">yes</a>{% else %}<span class="no">no</span>{% endif %}</td>{% endfor %}
+</tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+
+{% if competitors %}
+<h2 id="comp">Competitors from Google Places</h2>
+<div class="note">Order comes from the Places Text Search API. It is not the live map pack seen from a searcher's location, so use a rank grid for true positions. Ratings and review counts are Google's own numbers at the time of this run.</div>
+{% for c in competitors %}
+<h3>{{ c.city }}: "{{ c.query }}"</h3>
+<p class="sub">Client position: {{ c.client_position or "not in results" }} · Top 3 competitors average reviews: {{ c.top3_avg_reviews }} · Competitors median reviews: {{ c.median_reviews }}</p>
+<div class="tw"><table><thead><tr><th>#</th><th>Business</th><th>Rating</th><th>Reviews</th><th>Primary type</th><th>Website</th></tr></thead><tbody>
+{% for r in c.results %}<tr{% if r.is_client %} class="me"{% endif %}><td>{{ loop.index }}</td><td><a href="{{ r.maps_url }}">{{ r.name }}</a></td><td>{{ r.rating }}</td><td>{{ r.reviews }}</td><td>{{ r.primary_category }}</td><td class="url">{{ r.website }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endfor %}
+{% endif %}
+
+<h2 id="manual">Needs manual check</h2>
+<p class="sub">The tool has no access to these. Use the method listed.</p>
+<div class="tw"><table><thead><tr><th>What</th><th>How to check</th><th>Strategy</th></tr></thead><tbody>
+{% for f in manual %}<tr><td>{{ f.title }}</td><td>{{ f.rule }}{% if f.evidence %}<br><span class="why">{{ f.evidence|join("; ") }}</span>{% endif %}</td><td>{{ f.ref }}</td></tr>{% endfor %}
+</tbody></table></div>
+
+<h2 id="facts">Site facts found</h2>
+<div class="tw"><table><tbody>
+<tr><th>Phone numbers</th><td>{% for n, us in phone_map.items() %}{{ n }} ({{ us|length }} pages)<br>{% else %}None{% endfor %}</td></tr>
+<tr><th>Click-to-call coverage</th><td>{{ site_facts.tel_coverage }}</td></tr>
+<tr><th>Schema types</th><td>{% for t, n in site_facts.schema_types.items() %}{{ t }} ({{ n }}){% if not loop.last %}, {% endif %}{% else %}None{% endfor %}</td></tr>
+<tr><th>Profiles linked</th><td>{% for k, v in site_facts.profiles_linked.items() %}{{ k }}: <a href="{{ v[0] }}">{{ v[0] }}</a><br>{% else %}None{% endfor %}</td></tr>
+<tr><th>Manufacturers named</th><td>{% for m in site_facts.manufacturers %}{{ m }}<br>{% else %}None{% endfor %}</td></tr>
+<tr><th>Location-style URLs</th><td class="url">{% for u in site_facts.location_like_urls %}{{ u }}<br>{% else %}None detected{% endfor %}</td></tr>
+<tr><th>robots.txt</th><td>status {{ robots_status }}</td></tr>
+</tbody></table></div>
+
+<h2 id="inventory">Page inventory</h2>
+<details><summary>Show all {{ pages|length }} fetched URLs</summary>
+<div class="tw"><table><thead><tr><th>URL</th><th>Status</th><th>Title</th><th>H1</th><th>Words</th><th>Links in</th></tr></thead><tbody>
+{% for p in pages %}<tr><td class="url"><a href="{{ p.url }}">{{ p.url }}</a></td><td>{{ p.status or p.error }}</td><td>{{ p.title }}</td><td>{{ p.h1|join(" | ") }}</td><td>{{ p.word_count }}</td><td>{{ inbound_counts.get(p.url, 0) }}</td></tr>{% endfor %}
+</tbody></table></div>
+</details>
+
+<footer>Generated by SQ Local Auditor for SharpQuery · {{ requests }} HTTP requests · data.json, findings.csv, pages.csv and action_plan.csv are in the same folder.</footer>
+</div>
+</body>
+</html>
